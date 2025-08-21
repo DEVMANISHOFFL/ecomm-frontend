@@ -1,22 +1,27 @@
 "use client"
 
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import Link from "next/link"
-import { useState } from "react"
 import { useRouter } from "next/navigation"
 
-export default function LoginPage() {
+export default function SellerSignupPage() {
     const router = useRouter();
-    const [form, setForm] = useState({ email: "", password: "" })
+    const [form, setForm] = useState({
+        fullname: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+    })
     const [loading, setLoading] = useState(false)
     const [message, setMessage] = useState("")
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setForm({ ...form, [e.target.name]: e.target.value })
+        setForm({ ...form, [e.target.id]: e.target.value })
     }
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -24,19 +29,29 @@ export default function LoginPage() {
         setLoading(true)
         setMessage("")
 
+        if (form.password !== form.confirmPassword) {
+            setMessage("Passwords do not match")
+            setLoading(false)
+            return
+        }
+
         try {
-            const res = await fetch("http://localhost:8082/api/v1/login", {
+            const res = await fetch("http://localhost:8082/api/v1/users", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email: form.email, password: form.password }),
+                body: JSON.stringify({
+                    name: form.fullname,
+                    email: form.email,
+                    password: form.password,
+                    role: "seller"
+                }),
             })
 
             if (res.ok) {
                 const data = await res.json()
-                setMessage("Login successful")
-                localStorage.setItem("token", data.token) // store JWT if returned
-                setForm({ email: "", password: "" })
-                router.push("/");
+                setMessage("✅ Account created successfully!")
+                localStorage.setItem("token", data.token) // optional, if backend returns token
+                setForm({ fullname: "", email: "", password: "", confirmPassword: "" })
+                router.push("/seller/welcome")
             } else {
                 const err = await res.json()
                 setMessage("Error: " + err.message)
@@ -58,9 +73,9 @@ export default function LoginPage() {
                                 <span className="text-white font-bold text-xl">F</span>
                             </div>
                         </div>
-                        <CardTitle className="text-2xl font-bold text-gray-900">Welcome Back</CardTitle>
+                        <CardTitle className="text-2xl font-bold text-gray-900">Create Account</CardTitle>
                         <CardDescription className="text-gray-600">
-                            Sign in to your Flipkart account
+                            Join Flipkart for the best shopping experience
                         </CardDescription>
                     </CardHeader>
 
@@ -68,52 +83,79 @@ export default function LoginPage() {
                         <form onSubmit={handleSubmit} className="space-y-6">
                             <div className="space-y-4">
                                 <div className="space-y-2">
-                                    <Label htmlFor="email" className="text-sm font-medium text-gray-700">
-                                        Email or Mobile Number
+                                    <Label htmlFor="fullname" className="text-sm font-medium text-gray-700">
+                                        Full Name
                                     </Label>
                                     <Input
-                                        id="email"
-                                        name="email"
+                                        id="fullname"
                                         type="text"
-                                        value={form.email}
+                                        value={form.fullname}
                                         onChange={handleChange}
-                                        placeholder="Enter Email ID or Mobile Number"
+                                        placeholder="Enter your full name"
                                         className="h-12 border-gray-300 focus:border-flipkart-blue focus:ring-flipkart-blue"
                                     />
                                 </div>
 
+                                <div className="space-y-2">
+                                    <Label htmlFor="email" className="text-sm font-medium text-gray-700">
+                                        Email Address
+                                    </Label>
+                                    <Input
+                                        id="email"
+                                        type="email"
+                                        value={form.email}
+                                        onChange={handleChange}
+                                        placeholder="Enter your email address"
+                                        className="h-12 border-gray-300 focus:border-flipkart-blue focus:ring-flipkart-blue"
+                                    />
+                                </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="password" className="text-sm font-medium text-gray-700">
                                         Password
                                     </Label>
                                     <Input
                                         id="password"
-                                        name="password"
                                         type="password"
                                         value={form.password}
                                         onChange={handleChange}
-                                        placeholder="Enter Password"
+                                        placeholder="Create a strong password"
                                         className="h-12 border-gray-300 focus:border-flipkart-blue focus:ring-flipkart-blue"
                                     />
                                 </div>
 
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center space-x-2">
-                                        <input
-                                            id="remember"
-                                            type="checkbox"
-                                            className="w-4 h-4 text-flipkart-blue border-gray-300 rounded focus:ring-flipkart-blue"
-                                        />
-                                        <Label htmlFor="remember" className="text-sm text-gray-600">
-                                            Remember me
-                                        </Label>
-                                    </div>
-                                    <Link
-                                        href="/forgot-password"
-                                        className="text-sm text-flipkart-blue hover:underline"
+                                <div className="space-y-2">
+                                    <Label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700">
+                                        Confirm Password
+                                    </Label>
+                                    <Input
+                                        id="confirmPassword"
+                                        type="password"
+                                        value={form.confirmPassword}
+                                        onChange={handleChange}
+                                        placeholder="Confirm your password"
+                                        className="h-12 border-gray-300 focus:border-flipkart-blue focus:ring-flipkart-blue"
+                                    />
+                                </div>
+
+                                <div className="flex items-start space-x-2">
+                                    <input
+                                        id="terms"
+                                        type="checkbox"
+                                        className="w-4 h-4 text-flipkart-blue border-gray-300 rounded focus:ring-flipkart-blue mt-1"
+                                    />
+                                    <Label
+                                        htmlFor="terms"
+                                        className="text-sm text-gray-600 leading-relaxed"
                                     >
-                                        Forgot Password?
-                                    </Link>
+                                        I agree to Flipkart's{" "}
+                                        <Link href="/terms" className="text-flipkart-blue hover:underline">
+                                            Terms of Use
+                                        </Link>{" "}
+                                        and{" "}
+                                        <Link href="/privacy" className="text-flipkart-blue hover:underline">
+                                            Privacy Policy
+                                        </Link>
+                                    </Label>
                                 </div>
                             </div>
 
@@ -122,7 +164,7 @@ export default function LoginPage() {
                                 disabled={loading}
                                 className="w-full h-12 bg-flipkart-orange hover:bg-flipkart-orange/90 text-white font-semibold"
                             >
-                                {loading ? "Logging in..." : "Login"}
+                                {loading ? "Creating..." : "Create Account"}
                             </Button>
 
                             {message && (
@@ -141,17 +183,17 @@ export default function LoginPage() {
                                 variant="outline"
                                 className="w-full h-12 border-flipkart-blue text-flipkart-blue hover:bg-blue-50 bg-transparent"
                             >
-                                Request OTP
+                                Sign up with OTP
                             </Button>
 
                             <div className="text-center space-y-2">
                                 <p className="text-sm text-gray-600">
-                                    New to Flipkart?{" "}
+                                    Already have an account?{" "}
                                     <Link
-                                        href="/signup"
+                                        href="/login"
                                         className="text-flipkart-blue hover:underline font-medium"
                                     >
-                                        Create an account
+                                        Sign in
                                     </Link>
                                 </p>
                                 <Link href="/" className="text-sm text-flipkart-blue hover:underline">
@@ -164,14 +206,7 @@ export default function LoginPage() {
 
                 <div className="mt-6 text-center">
                     <p className="text-xs text-gray-500">
-                        By continuing, you agree to Flipkart&apos;s{" "}
-                        <Link href="/terms" className="text-flipkart-blue hover:underline">
-                            Terms of Use
-                        </Link>{" "}
-                        and{" "}
-                        <Link href="/privacy" className="text-flipkart-blue hover:underline">
-                            Privacy Policy
-                        </Link>
+                        By creating an account, you agree to our terms and conditions
                     </p>
                 </div>
             </div>

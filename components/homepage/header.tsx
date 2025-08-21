@@ -1,9 +1,20 @@
+"use client"
+
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ShoppingCart, Search, User } from "lucide-react"
 import Link from "next/link"
 
 export function Header() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+
+  useEffect(() => {
+    // Check if token exists in localStorage
+    const token = localStorage.getItem("token")
+    setIsLoggedIn(!!token)
+  }, [])
+
   return (
     <header className="bg-flipkart-blue text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -37,19 +48,35 @@ export function Header() {
 
           {/* Right side actions */}
           <div className="flex items-center space-x-6">
-            <Link href="/login">
-              <Button variant="ghost" className="text-white hover:bg-white/10 flex items-center space-x-1">
-                <User className="h-4 w-4" />
-                <span className="text-sm">Login</span>
+            {!isLoggedIn ? (
+              <Link href="/login">
+                <Button variant="ghost" className="text-white hover:bg-white/10 flex items-center space-x-1">
+                  <User className="h-4 w-4" />
+                  <span className="text-sm">Login</span>
+                </Button>
+              </Link>
+            ) : (
+              <Button
+                variant="ghost"
+                className="text-white hover:bg-white/10 flex items-center space-x-1"
+                onClick={() => {
+                  localStorage.removeItem("token")
+                  setIsLoggedIn(false)
+                }}
+              >
+                <span className="text-sm">Logout</span>
               </Button>
-            </Link>
+            )}
+
             <Button variant="ghost" className="text-white hover:bg-white/10 flex items-center space-x-1">
               <ShoppingCart className="h-4 w-4" />
               <span className="text-sm">Cart</span>
             </Button>
-            <Button variant="ghost" className="text-white hover:bg-white/10 flex items-center space-x-1">
-              <span className="text-sm">Become a Seller</span>
-            </Button>
+            <Link href="/sellersignup">
+              <Button variant="ghost" className="text-white hover:bg-white/10 flex items-center space-x-1">
+                <span className="text-sm">Become a Seller</span>
+              </Button>
+            </Link>
           </div>
         </div>
       </div>

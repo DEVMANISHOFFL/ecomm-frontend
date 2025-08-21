@@ -30,7 +30,7 @@ export default function SignupPage() {
         setMessage("")
 
         if (form.password !== form.confirmPassword) {
-            setMessage("❌ Passwords do not match")
+            setMessage("Passwords do not match")
             setLoading(false)
             return
         }
@@ -53,10 +53,10 @@ export default function SignupPage() {
                 router.push("/")
             } else {
                 const err = await res.json()
-                setMessage("❌ Error: " + err.message)
+                setMessage("Error: " + err.message)
             }
         } catch (error) {
-            setMessage("❌ Network error")
+            setMessage("Failed")
         } finally {
             setLoading(false)
         }
